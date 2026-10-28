@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finance — Login</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Roboto', system-ui, -apple-system, sans-serif;
+      background: #0f1220;
+      background-image:
+        radial-gradient(circle at 20% 30%, rgba(90, 110, 255, .16), transparent 45%),
+        radial-gradient(circle at 80% 70%, rgba(0, 200, 180, .10), transparent 40%);
+      color: #e8eaf6;
+    }
+    .card {
+      width: min(360px, 92vw);
+      padding: 36px 28px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid rgba(255, 255, 255, .12);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, .45);
+      text-align: center;
+    }
+    .logo { font-size: 1.6rem; margin-bottom: 4px; }
+    .sub { font-size: .9rem; opacity: .65; margin-bottom: 24px; }
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, .15);
+      background: rgba(255, 255, 255, .07);
+      color: inherit;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+    input:focus { border-color: #7d8bff; }
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #5a6eff, #7d8bff);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: filter .2s, opacity .2s;
+    }
+    button:hover { filter: brightness(1.1); }
+    button:disabled { opacity: .55; cursor: wait; }
+    .msg { min-height: 20px; margin-top: 12px; font-size: .85rem; color: #ff8a8a; }
+    a.link { display: inline-block; margin-top: 10px; font-size: .8rem; opacity: .55; color: inherit; text-decoration: none; cursor: pointer; }
+    a.link:hover { opacity: .9; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">💰 Finance</div>
+    <p class="sub">Acesse sua conta</p>
+    <form id="form-login" autocomplete="off">
+      <input id="user" type="text" placeholder="Usuário" autocomplete="username" required />
+      <input id="pass" type="password" placeholder="Senha" autocomplete="current-password" required />
+      <button id="btn-login" type="submit">Entrar</button>
+      <div id="msg" class="msg"></div>
+    </form>
+  </div>
+  <script>
+    // Já logado? Vai direto para o app
+    if (localStorage.getItem('fin_token')) window.location.href = 'index.html';
+
+    document.getElementById('form-login').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btn-login');
+      const msg = document.getElementById('msg');
+      btn.disabled = true;
+      msg.textContent = '';
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user: document.getElementById('user').value.trim(),
+            pass: document.getElementById('pass').value
+          })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.token) {
+          localStorage.setItem('fin_token', data.token);
+          window.location.href = 'index.html';
+        } else {
+          msg.textContent = data.error || 'Usuário ou senha inválidos';
+        }
+      } catch (err) {
+        msg.textContent = 'Falha de conexão: ' + err.message;
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,3 +1,19 @@
+// --- LOGIN ---
+// Sem token salvo: redireciona para a tela de login e para o script
+if (!localStorage.getItem('fin_token')) {
+    window.location.href = 'login.html';
+    throw new Error('Sem sessão: redirecionando para login');
+}
+
+function authHeaders() {
+    return { 'Authorization': 'Bearer ' + (localStorage.getItem('fin_token') || '') };
+}
+
+function logoutForced() {
+    localStorage.removeItem('fin_token');
+    window.location.href = 'login.html';
+}
+
 const transactionList = document.getElementById('transaction-list');
 const transactionListIncome = document.getElementById('transaction-list-income');
 const totalBalance = document.getElementById('total-balance');
@@ -377,10 +393,11 @@ async function saveToServer() {
     try {
         const response = await fetch(API_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', ...authHeaders() },
             body: JSON.stringify(dataToSave)
         });
 
+        if (response.status === 401) { logoutForced(); return; }
         if (!response.ok) {
             const errorMsg = `Erro ${response.status}: O servidor não aceitou os dados (talvez o arquivo esteja grande demais).`;
             alert(errorMsg);
@@ -399,7 +416,8 @@ async function saveToServer() {
 
 async function loadData() {
     try {
-        const res = await fetch(API_URL);
+        const res = await fetch(API_URL, { headers: authHeaders() });
+        if (res.status === 401) { logoutForced(); return; }
         if (res.ok) {
             const data = await res.json();
             transactions = data.transactions || [];
