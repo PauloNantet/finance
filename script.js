@@ -1182,6 +1182,13 @@ function savePaymentIncomeEdit() {
 btnSettings.onclick = () => settingsOverlay.style.display = 'flex';
 btnCloseSettings.onclick = () => settingsOverlay.style.display = 'none';
 document.getElementById('btn-reset-filters').onclick = resetAllFilters;
+
+// Deslogar: limpa o token e volta para a tela de login
+const btnLogout = document.getElementById('btn-logout');
+if (btnLogout) btnLogout.onclick = () => {
+    localStorage.removeItem('fin_token');
+    window.location.href = 'login.html';
+};
 settingsOverlay.onclick = (e) => { if (e.target === settingsOverlay) settingsOverlay.style.display = 'none'; };
 btnSaveDb.onclick = () => {
     const blob = new Blob([JSON.stringify({ transactions, configs }, null, 2)], { type: 'application/json' });
